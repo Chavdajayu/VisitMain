@@ -24,7 +24,7 @@ self.addEventListener('activate', (event) => {
 // Background message handler
 messaging.onBackgroundMessage((payload) => {
   console.log('[service-worker.js] Received background message:', payload);
-  
+
   const { title, body, icon } = payload.notification || {};
   const { requestId, visitorName } = payload.data || {};
 
@@ -53,16 +53,16 @@ messaging.onBackgroundMessage((payload) => {
 // Notification click handler
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  
-  const { requestId } = event.notification.data || {};
-  
+
+  const { requestId, residencyId } = event.notification.data || {};
+
   if (event.action === 'APPROVE') {
     // Handle approve action
     event.waitUntil(
       fetch('/api/visitor-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'approve', requestId })
+        body: JSON.stringify({ action: 'approve', requestId, residencyId })
       }).then(() => {
         self.registration.showNotification('Visitor Approved', {
           body: 'Access granted successfully',
@@ -76,7 +76,7 @@ self.addEventListener('notificationclick', event => {
       fetch('/api/visitor-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reject', requestId })
+        body: JSON.stringify({ action: 'reject', requestId, residencyId })
       }).then(() => {
         self.registration.showNotification('Visitor Rejected', {
           body: 'Access denied',
